@@ -15,17 +15,17 @@ https://first-hour-phi.vercel.app (open in the Meta Quest Browser, press Start, 
 ## Description (≤500 words)
 
 **Inspiration**
-In a disaster, the decisions made in the first hour are made by local officials who almost never practise them. Real practice drills ("tabletop exercises") need a trained facilitator and a room full of people playing fire, hospital, utilities and press, so most small towns, schools and hospitals rarely run them. We asked what would happen if that room of role-players were AI agents with their own goals, their own secrets and their own opinions about you, sitting around your own table.
+In a disaster, first-hour decisions fall to local officials who rarely practise them. Real drills ("tabletop exercises") need a facilitator and a room of role-players, so most towns, schools and hospitals seldom run them. What if those role-players were AI agents with their own goals, secrets and opinions of you, sitting around your own table?
 
 **What it is**
-First Hour is a seated, hands-only mixed-reality strategy game. A miniature town, Harrow Bend, unfolds on your real table and a flash flood begins. Four AI department heads stand at the table's edge:
+A seated, hands-only mixed-reality strategy game. A miniature town unfolds on your real table and a flash flood begins. Four AI department heads stand at its edge:
 
 - the Fire Chief, who wants crews on rescues now;
 - the Hospital Director, who wants power for 14 patients on life support;
 - the Utilities Lead, who wants to cut power before water meets live lines;
 - the Press Officer, who is fighting rumours on social media.
 
-They propose actions, disagree, and whisper to each other privately. You have one game hour (ten real minutes) and two hands.
+They propose, disagree and whisper privately. You have one game hour (ten real minutes) and two hands.
 
 **How you play**
 Everything is a pinch:
@@ -40,11 +40,11 @@ Everything is a pinch:
 
 **How we built it**
 - Built with Meta's Immersive Web SDK 1.0 (Three.js plus ECS) and deployed on Vercel.
-- The town is a deterministic simulation we wrote, with 135 unit tests covering flood spread, sandbags, power and the hospital generator, evacuation routing, the bridge collapse and scoring.
+- The town is our own deterministic simulation (flood, power, generator, evacuation routing), with 135 unit tests.
 - **It is genuinely multi-agent.** Each department head is a separate Claude call with its own partial view of the town, its own goals, trust and memory, and it returns structured actions. The simulation checks every action before it happens.
-- Three more agents work behind the scenes: a Director paces the crisis from an event deck, a Rumor agent spreads believable misinformation that only the Press Officer can see, and a Debrief agent writes the after-action review.
+- Behind the scenes, a Director agent paces the crisis, a Rumor agent spreads misinformation only the Press Officer sees, and a Debrief agent writes the review.
 - **It still works if you remove the AI.** Every agent has a rule-based fallback, so the game plays fully offline or without a model.
-- Room detection places the town on your real table, falls back to a virtual desk anywhere else, and the layout fits the VR Glasses' narrower view.
+- The town lands on your detected table (or a virtual desk), and the layout fits the VR Glasses' narrower view.
 
 **What's next**
 - Real people can take seats in place of AI agents, for mixed human/AI drills.
