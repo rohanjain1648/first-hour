@@ -1,6 +1,6 @@
-import { logEvent } from './log';
-import type { SimState, XY } from './types';
-import { cellKey } from './types';
+import { logEvent } from './log.js';
+import type { SimState, XY } from './types.js';
+import { cellKey } from './types.js';
 
 export const DANGER_WATER = 0.3;
 export const HARM_AFTER_GAME_S = 900;

@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { ALL_AGENT_IDS, buildSystemPrompt, schemaFor } from '../src/agents/prompts';
-import { parseTurnOutput } from '../src/agents/types';
+import { ALL_AGENT_IDS, buildSystemPrompt, schemaFor } from '../src/agents/prompts.js';
+import { parseTurnOutput } from '../src/agents/types.js';
 
 const RATE_LIMIT = 60;
 const RATE_WINDOW_MS = 60_000;
@@ -37,7 +37,6 @@ export async function POST(req: Request): Promise<Response> {
   const ip = (req.headers.get('x-forwarded-for') ?? 'local').split(',')[0].trim();
   if (limited(ip)) return Response.json({ error: 'rate limited' }, { status: 429 });
 
-  client ??= new Anthropic();
   const content = JSON.stringify({
     observation: body.observation ?? {},
     inbox: body.inbox ?? [],
@@ -45,6 +44,7 @@ export async function POST(req: Request): Promise<Response> {
     trustInCommander: body.trust,
   });
   try {
+    client ??= new Anthropic();
     const msg = await client.messages.create({
       model: process.env.AGENT_MODEL ?? 'claude-haiku-5-5',
       max_tokens: 1024,

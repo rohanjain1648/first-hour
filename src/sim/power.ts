@@ -1,6 +1,6 @@
-import { logEvent } from './log';
-import type { SimState } from './types';
-import { cellKey } from './types';
+import { logEvent } from './log.js';
+import type { SimState } from './types.js';
+import { cellKey } from './types.js';
 
 export const SUBSTATION_FLOOD_WATER = 0.5;
 export const FUEL_FULL = 60;

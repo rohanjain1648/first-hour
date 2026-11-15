@@ -1,12 +1,12 @@
-import { validateAction, type ActionResult } from '../sim/actions';
-import { logEvent } from '../sim/log';
-import type { Action, Actor, AgentId, SimState } from '../sim/types';
-import type { Session } from '../game/session';
-import { fallbackTurn } from './fallback';
-import { observe } from './observe';
-import { AGENT_IDS, ROLES } from './roles';
-import { TRUST, applyTrust, remember } from './trust';
-import type { AgentState, TurnOutput, TurnRequest } from './types';
+import { validateAction, type ActionResult } from '../sim/actions.js';
+import { logEvent } from '../sim/log.js';
+import type { Action, Actor, AgentId, SimState } from '../sim/types.js';
+import type { Session } from '../game/session.js';
+import { fallbackTurn } from './fallback.js';
+import { observe } from './observe.js';
+import { AGENT_IDS, ROLES } from './roles.js';
+import { TRUST, applyTrust, remember } from './trust.js';
+import type { AgentState, TurnOutput, TurnRequest } from './types.js';
 
 export interface TurnSource {
   turn(req: TurnRequest): Promise<TurnOutput | null>;

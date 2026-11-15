@@ -1,4 +1,4 @@
-import type { AgentId } from '../sim/types';
+import type { AgentId } from '../sim/types.js';
 
 export const SITUATIONS = ['calm', 'warning', 'crisis', 'gratitude', 'complaint', 'withholding'] as const;
 export type Situation = (typeof SITUATIONS)[number];

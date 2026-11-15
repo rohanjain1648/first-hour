@@ -1,5 +1,5 @@
-import type { AgentId, ResourceType } from '../sim/types';
-import { ROLE_DEPLOY } from '../sim/actions';
+import type { AgentId, ResourceType } from '../sim/types.js';
+import { ROLE_DEPLOY } from '../sim/actions.js';
 
 export const AGENT_IDS: AgentId[] = ['fire', 'hospital', 'utilities', 'press'];
 

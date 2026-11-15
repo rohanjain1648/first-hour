@@ -1,4 +1,4 @@
-import { parseTurnOutput, type TurnOutput, type TurnRequest } from './types';
+import { parseTurnOutput, type TurnOutput, type TurnRequest } from './types.js';
 
 export const MAX_CALLS = 250;
 export const TIMEOUT_MS = 8000;

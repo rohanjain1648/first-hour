@@ -1,12 +1,12 @@
-import { applyAction } from './actions';
-import { stepFlood } from './flood';
-import { buildHarrowBend } from './map';
-import { stepPeople } from './people';
-import { stepPower } from './power';
-import type { Action, Actor, Modifier, ResourceType, SimState, Token, XY } from './types';
-import { DISTRICTS } from './types';
+import { applyAction } from './actions.js';
+import { stepFlood } from './flood.js';
+import { buildHarrowBend } from './map.js';
+import { stepPeople } from './people.js';
+import { stepPower } from './power.js';
+import type { Action, Actor, Modifier, ResourceType, SimState, Token, XY } from './types.js';
+import { DISTRICTS } from './types.js';
 
-export { logEvent } from './log';
+export { logEvent } from './log.js';
 
 export const TICK_REAL_S = 0.5;
 export const TIME_SCALE = 6;

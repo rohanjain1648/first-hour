@@ -1,4 +1,4 @@
-import type { Cell, CellType, DistrictId } from './types';
+import type { Cell, CellType, DistrictId } from './types.js';
 
 // r residential, = road, H bridge, R river, B bank, S school, + hospital,
 // F fire station, P substation, p park

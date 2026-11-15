@@ -1,10 +1,10 @@
-import { ROLE_DEPLOY } from '../sim/actions';
-import { DANGER_WATER } from '../sim/people';
-import type { Action, AgentId, Cell, DistrictId, ResourceType, SimState } from '../sim/types';
-import { cellKey } from '../sim/types';
-import { LINES, fillLine, type Situation } from './lines';
-import type { AgentState, TurnOutput } from './types';
-import { WITHHOLD_BELOW } from './trust';
+import { ROLE_DEPLOY } from '../sim/actions.js';
+import { DANGER_WATER } from '../sim/people.js';
+import type { Action, AgentId, Cell, DistrictId, ResourceType, SimState } from '../sim/types.js';
+import { cellKey } from '../sim/types.js';
+import { LINES, fillLine, type Situation } from './lines.js';
+import type { AgentState, TurnOutput } from './types.js';
+import { WITHHOLD_BELOW } from './trust.js';
 
 type Rng = () => number;
 type Proposal = TurnOutput['proposals'][number];

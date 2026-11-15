@@ -1,7 +1,7 @@
-import { logEvent } from './log';
-import { RESCUE_GAME_S } from './people';
-import type { Action, Actor, AgentId, ResourceType, SimState } from './types';
-import { DISTRICTS } from './types';
+import { logEvent } from './log.js';
+import { RESCUE_GAME_S } from './people.js';
+import type { Action, Actor, AgentId, ResourceType, SimState } from './types.js';
+import { DISTRICTS } from './types.js';
 
 export type ActionResult = { ok: true } | { ok: false; reason: string };
 

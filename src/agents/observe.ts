@@ -1,6 +1,6 @@
-import { DANGER_WATER } from '../sim/people';
-import type { AgentId, DistrictId, SimState } from '../sim/types';
-import { DISTRICTS, cellKey } from '../sim/types';
+import { DANGER_WATER } from '../sim/people.js';
+import type { AgentId, DistrictId, SimState } from '../sim/types.js';
+import { DISTRICTS, cellKey } from '../sim/types.js';
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
 

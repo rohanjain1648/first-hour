@@ -1,4 +1,4 @@
-import type { SimState } from './types';
+import type { SimState } from './types.js';
 
 /** river water gained per game second at rain = 1 */
 export const RAIN_RATE = 0.0013;

@@ -1,5 +1,5 @@
-import type { SimState } from './types';
-import { cellKey } from './types';
+import type { SimState } from './types.js';
+import { cellKey } from './types.js';
 
 export type Rating = 'A' | 'B' | 'C' | 'D' | 'E';
 

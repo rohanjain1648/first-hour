@@ -1,6 +1,6 @@
-import type { AgentId } from '../sim/types';
-import { ROLES } from './roles';
-import type { SystemAgentId } from './types';
+import type { AgentId } from '../sim/types.js';
+import { ROLES } from './roles.js';
+import type { SystemAgentId } from './types.js';
 
 /** Shared by the browser (validation) and the Vercel function (prompting). No DOM, no SDK imports. */
 

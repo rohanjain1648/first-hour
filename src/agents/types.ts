@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import type { AgentId } from '../sim/types';
+import type { AgentId } from '../sim/types.js';
 
-export type { AgentId } from '../sim/types';
+export type { AgentId } from '../sim/types.js';
 export type SystemAgentId = 'director' | 'rumor' | 'debrief';
 
 const words = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;

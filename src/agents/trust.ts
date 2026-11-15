@@ -1,5 +1,5 @@
-import type { AgentId } from '../sim/types';
-import type { AgentState } from './types';
+import type { AgentId } from '../sim/types.js';
+import type { AgentState } from './types.js';
 
 export const TRUST = {
   approve: 5,
