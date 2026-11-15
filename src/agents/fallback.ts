@@ -23,7 +23,8 @@ function dangerCells(s: SimState): Cell[] {
 }
 
 function floodedPoweredDistrict(s: SimState): DistrictId | undefined {
-  const c = cells(s).find((x) => x.type !== 'river' && x.water > DANGER_WATER && !s.cutDistricts.includes(x.district) && x.type !== 'hospital');
+  // homes standing in water with power on: riverbanks and roads alone do not justify a blackout
+  const c = cells(s).find((x) => x.type === 'residential' && x.water > DANGER_WATER && !s.cutDistricts.includes(x.district));
   return c?.district;
 }
 

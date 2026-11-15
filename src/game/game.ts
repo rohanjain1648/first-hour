@@ -5,7 +5,14 @@ import type { Action, Actor, Modifier, SimState } from '../sim/types';
 import { BoardView, buildFallbackDesk } from '../xr/board';
 import type { PlaneReaderSystem } from '../xr/planes';
 import { boardCenterOn, chooseTable, fallbackDesk, type PlaneInfo } from '../xr/table';
-import { readPref } from './persist';
+import { AiClient } from '../agents/aiClient';
+import { Orchestrator } from '../agents/orchestrator';
+import { AGENT_IDS } from '../agents/roles';
+import { newAgentState } from '../agents/trust';
+import type { AgentState } from '../agents/types';
+import { createRng } from '../sim/rng';
+import type { AgentId } from '../sim/types';
+import { loadSave, readPref, type Save } from './persist';
 import { Session } from './session';
 
 export const TABLE_SEARCH_S = 3;
@@ -26,6 +33,11 @@ export class Game {
   plane: PlaneInfo | null = null;
   usedFallback = false;
   aiEnabled: boolean;
+  ai: AiClient | null = null;
+  orch: Orchestrator | null = null;
+  agents: Record<AgentId, AgentState> | null = null;
+  save: Save = loadSave();
+  readonly sessionId = Math.random().toString(36).slice(2);
   private searchT = 0;
   private headPos = new Vector3();
   private headDir = new Vector3();
@@ -124,6 +136,7 @@ export class Game {
       const before = this.sim.t;
       tick(this.sim, dt);
       if (this.sim.t !== before) this.simDirty = true;
+      this.orch?.update(dt);
     }
     if (this.sim && this.board && this.simDirty) {
       this.board.syncFrom(this.sim);
@@ -141,6 +154,19 @@ export class Game {
     this.sim = createSim(Math.floor(Math.random() * 2 ** 31), this.pickModifier());
     this.board = new BoardView(this.world, plane, pos);
     this.board.syncFrom(this.sim);
+    this.agents = Object.fromEntries(AGENT_IDS.map((id) => [id, newAgentState(id, this.save.memories[id] ?? [])])) as Record<AgentId, AgentState>;
+    this.ai = new AiClient({ enabled: this.aiEnabled });
+    const sim = this.sim;
+    this.orch = new Orchestrator({
+      sim,
+      session: this.session,
+      ai: this.ai,
+      agents: this.agents,
+      rng: createRng(sim.seed ^ 0x5bd1e995),
+      now: () => this.session.crisisElapsed,
+      act: (a, actor, o) => this.act(a, actor, o),
+      sessionId: this.sessionId,
+    });
     this.session.tableFound();
     console.info('[FH] board placed', JSON.stringify({ label: plane.label, fallback: this.usedFallback, center: plane.center, size: [this.board.width, this.board.depth] }));
     for (const l of this.listeners) l(this);

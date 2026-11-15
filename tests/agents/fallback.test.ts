@@ -82,3 +82,18 @@ describe('fallbackTurn', () => {
     expect(out.proposals.some((p) => p.action.kind === 'deploy' && p.action.token.startsWith('crew'))).toBe(true);
   });
 });
+
+describe('utilities power cuts', () => {
+  test('does not propose cutting a district just because its riverbank floods', () => {
+    const s = createSim(1, 'heavy');
+    for (const c of s.cells[2]) c.water = 1; // north banks (hillcrest/eastfield)
+    const out = fallbackTurn(s, newAgentState('utilities'), createRng(2));
+    expect(out.proposals.some((p) => p.action.kind === 'cut_power')).toBe(false);
+  });
+  test('proposes cutting a district whose homes are flooded', () => {
+    const s = createSim(1, 'heavy');
+    s.cells[7][0].water = 1;
+    const out = fallbackTurn(s, newAgentState('utilities'), createRng(2));
+    expect(out.proposals.some((p) => p.action.kind === 'cut_power' && p.action.district === 'riverside')).toBe(true);
+  });
+});

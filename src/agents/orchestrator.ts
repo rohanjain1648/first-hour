@@ -34,6 +34,8 @@ export interface Thread {
 export type OrchEvent = 'say' | 'proposal' | 'proposalResolved' | 'whisper' | 'whisperHeard' | 'trust' | 'drafts' | 'freelance';
 
 export const HEARTBEAT_S = 20;
+/** minimum gap between turns woken by sim events (keeps AI calls bounded) */
+export const MIN_EVENT_GAP_S = 6;
 export const PROPOSAL_TTL_S = 15;
 export const THREAD_TTL_S = 8;
 export const FREELANCE_AFTER_S = 45;
@@ -66,6 +68,7 @@ export class Orchestrator {
   private logIdx = 0;
   private lastTurnT: Record<AgentId, number>;
   private wantTurn = new Set<AgentId>();
+  private eventWake = new Set<AgentId>();
   private lastFreelanceT: Record<AgentId, number>;
   private lastIgnorePenaltyT: Record<AgentId, number>;
   private listeners = new Map<OrchEvent, ((data: unknown) => void)[]>();
@@ -102,7 +105,8 @@ export class Orchestrator {
       for (const id of AGENT_IDS) {
         if (ROLES[id].domain.includes(ev.type)) {
           agents[id].inbox.push({ from: 'sim', text: `${ev.type} ${JSON.stringify(ev.data).slice(0, 80)}`, t });
-          this.wantTurn.add(id);
+          agents[id].inbox = agents[id].inbox.slice(-12);
+          this.eventWake.add(id);
         }
       }
     }
@@ -111,8 +115,10 @@ export class Orchestrator {
       const a = agents[id];
       if (this.focus === id) a.lastFocusedT = t;
       if (t - this.lastTurnT[id] >= HEARTBEAT_S) this.wantTurn.add(id);
+      if (this.eventWake.has(id) && t - this.lastTurnT[id] >= MIN_EVENT_GAP_S) this.wantTurn.add(id);
       if (this.wantTurn.has(id) && !a.inFlight) {
         this.wantTurn.delete(id);
+        this.eventWake.delete(id);
         this.startTurn(a, t);
       }
       this.ignoreRules(a, t);
@@ -204,7 +210,7 @@ export class Orchestrator {
       if (m.to === a.id) continue;
       const to = this.d.agents[m.to];
       to.inbox.push({ from: a.id, text: m.text, t });
-      this.wantTurn.add(m.to);
+      this.eventWake.add(m.to);
       if (m.private) {
         const th: Thread = { id: `w${++this.seq}`, from: a.id, to: m.to, text: m.text, createdT: t, expiresT: t + THREAD_TTL_S, heard: false };
         this.threads.push(th);

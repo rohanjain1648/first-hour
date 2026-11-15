@@ -165,3 +165,17 @@ describe('Orchestrator', () => {
     expect(ai.turn).not.toHaveBeenCalled();
   });
 });
+
+describe('turn throttling', () => {
+  test('domain events wake an agent at most once per 6 s', async () => {
+    const { sim, ai, advance } = setup();
+    await advance(5);
+    const before = ai.turn.mock.calls.filter((c) => (c[0] as TurnRequest).agentId === 'utilities').length;
+    for (let i = 0; i < 6; i++) {
+      sim.log.push({ t: sim.t, type: 'hazard.livewater', actor: 'sim', data: { cell: `${i},7` } });
+      await advance(1);
+    }
+    const after = ai.turn.mock.calls.filter((c) => (c[0] as TurnRequest).agentId === 'utilities').length;
+    expect(after - before).toBeLessThanOrEqual(1);
+  });
+});

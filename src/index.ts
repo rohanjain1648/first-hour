@@ -2,7 +2,10 @@ import { createSystem, World } from '@iwsdk/core';
 import projectOptions from 'virtual:iwsdk-project';
 import { Game } from './game/game';
 import { writePref } from './game/persist';
+import { AgentsSystem } from './xr/agentsView';
+import { ChipsSystem } from './xr/chips';
 import { HudSystem } from './xr/hud';
+import { ThreadsSystem } from './xr/threads';
 import { PlaneReaderSystem } from './xr/planes';
 import { TraySystem } from './xr/tray';
 
@@ -19,6 +22,9 @@ World.create(document.getElementById('scene-container') as HTMLDivElement, proje
   world.registerSystem(GameLoopSystem);
   world.registerSystem(TraySystem);
   world.registerSystem(HudSystem);
+  world.registerSystem(AgentsSystem);
+  world.registerSystem(ThreadsSystem);
+  world.registerSystem(ChipsSystem);
   game = new Game(world, world.getSystem(PlaneReaderSystem)!);
   (window as unknown as { __fh: Game }).__fh = game;
 
