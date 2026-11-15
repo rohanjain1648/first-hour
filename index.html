@@ -1,15 +1,45 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <link rel="icon" href="data:," />
-    <title>meta-vr</title>
+    <title>First Hour</title>
+    <style>
+      :root { --ink: #f4efe6; --muted: #b9b2a6; --bg: #14161a; --accent: #e8a33d; }
+      body { margin: 0; background: var(--bg); font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+      #landing {
+        position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center;
+        padding: 16px; background: radial-gradient(circle at 50% 30%, #23262c, #101215 70%); color: var(--ink);
+      }
+      #landing[hidden] { display: none; }
+      .card { max-width: 560px; text-align: center; }
+      h1 { font-size: clamp(40px, 9vw, 72px); margin: 0 0 8px; letter-spacing: 0.02em; }
+      .pitch { font-size: clamp(16px, 3.6vw, 20px); line-height: 1.5; color: var(--muted); margin: 0 0 28px; }
+      #start-btn {
+        font-size: 22px; font-weight: 700; padding: 18px 44px; border-radius: 999px; border: 0; cursor: pointer;
+        background: var(--accent); color: #1b1307;
+      }
+      #start-btn:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+      .opts { margin-top: 20px; color: var(--muted); font-size: 15px; }
+      .note { margin-top: 28px; font-size: 13px; color: #b0aa9e; }
+    </style>
   </head>
-  <body style="margin: 0">
+  <body>
+    <div id="landing">
+      <div class="card">
+        <h1>First Hour</h1>
+        <p class="pitch">
+          A flood hits a small town on your table. Your four AI department heads disagree.
+          You have one hour, ten real minutes, and two hands.
+        </p>
+        <button id="start-btn" type="button">Start</button>
+        <div class="opts">
+          <label><input id="ai-toggle" type="checkbox" checked /> AI agents on</label>
+        </div>
+        <p class="note">Hands only. Best seated at a table. Harrow Bend is a fictional town.</p>
+      </div>
+    </div>
     <div id="scene-container"></div>
     <script type="module" src="/src/index.ts"></script>
   </body>

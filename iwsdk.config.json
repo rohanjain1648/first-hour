@@ -54,7 +54,7 @@
   "dev": {
     "emulator": {
       "device": "metaQuest3",
-      "environment": "sunlit_living_room"
+      "environment": "conference_room"
     }
   }
 }
