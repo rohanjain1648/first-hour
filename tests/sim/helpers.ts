@@ -24,6 +24,7 @@ export function makeState(cells: Cell[][], extra: Partial<SimState> = {}): SimSt
     modifier: 'heavy',
     hospitalDarkS: 0,
     liveWater: [],
+    carry: 0,
     ...extra,
   };
 }

@@ -74,6 +74,8 @@ export interface SimState {
   hospitalDarkS: number;
   /** cell keys that already logged a live-water hazard */
   liveWater: string[];
+  /** real seconds not yet consumed by a 0.5 s tick */
+  carry: number;
 }
 
 export type Action =
