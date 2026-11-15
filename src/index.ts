@@ -1,5 +1,6 @@
 import { createSystem, World } from '@iwsdk/core';
 import projectOptions from 'virtual:iwsdk-project';
+import { AudioSystem, ensureAudio } from './audio/audioSystem';
 import { Game } from './game/game';
 import { writePref } from './game/persist';
 import { AgentsSystem } from './xr/agentsView';
@@ -25,6 +26,7 @@ World.create(document.getElementById('scene-container') as HTMLDivElement, proje
   world.registerSystem(AgentsSystem);
   world.registerSystem(ThreadsSystem);
   world.registerSystem(ChipsSystem);
+  world.registerSystem(AudioSystem);
   game = new Game(world, world.getSystem(PlaneReaderSystem)!);
   (window as unknown as { __fh: Game }).__fh = game;
 
@@ -40,6 +42,8 @@ World.create(document.getElementById('scene-container') as HTMLDivElement, proje
   }
   startBtn?.addEventListener('click', () => {
     landing?.setAttribute('hidden', '');
+    const ac = ensureAudio();
+    console.info('[FH] audio', ac?.state ?? 'unavailable');
     game!.start();
   });
   game.session.onPhase((p) => {
