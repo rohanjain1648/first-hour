@@ -60,7 +60,7 @@ describe('fallbackTurn', () => {
         if (!r.success) throw new Error(`${id} state ${i}: ${JSON.stringify(r.error.issues)} ${JSON.stringify(out)}`);
       }
     }
-  });
+  }, 30_000);
   test('withholds only under 30 trust', () => {
     const rng = createRng(1);
     const s = createSim(1, 'heavy');

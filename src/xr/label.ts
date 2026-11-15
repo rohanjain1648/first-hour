@@ -36,7 +36,7 @@ export class Label {
     if (text === this.text) return;
     this.text = text;
     const { ctx, canvas, opts } = this;
-    const px = opts.px ?? 64;
+    let px = opts.px ?? 64;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (opts.bg !== 'none') {
       ctx.fillStyle = opts.bg ?? 'rgba(16,18,22,0.92)';
@@ -46,10 +46,16 @@ export class Label {
       ctx.fill();
     }
     ctx.fillStyle = opts.fg ?? '#f6f1e7';
-    ctx.font = `${opts.bold ? '700' : '500'} ${px}px system-ui, -apple-system, Segoe UI, sans-serif`;
     ctx.textAlign = opts.align ?? 'center';
     ctx.textBaseline = 'middle';
-    const lines = wrap(ctx, text, canvas.width - 80);
+    // shrink the font until every wrapped line fits the canvas
+    let lines: string[] = [];
+    for (;;) {
+      ctx.font = `${opts.bold ? '700' : '500'} ${px}px system-ui, -apple-system, Segoe UI, sans-serif`;
+      lines = wrap(ctx, text, canvas.width - 80);
+      if (lines.length * px * 1.2 <= canvas.height * 0.92 || px <= 14) break;
+      px -= 3;
+    }
     const lh = px * 1.2;
     const top = canvas.height / 2 - ((lines.length - 1) * lh) / 2;
     const x = ctx.textAlign === 'left' ? 40 : canvas.width / 2;

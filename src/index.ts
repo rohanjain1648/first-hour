@@ -7,15 +7,25 @@ import { AgentsSystem } from './xr/agentsView';
 import { BroadcastSystem } from './xr/broadcast';
 import { ChipsSystem } from './xr/chips';
 import { HudSystem } from './xr/hud';
+import { OutcomeSystem } from './xr/outcome';
 import { ThreadsSystem } from './xr/threads';
 import { PlaneReaderSystem } from './xr/planes';
 import { TraySystem } from './xr/tray';
 
 let game: Game | null = null;
+/** dev-only fast-forward for testing full sessions: press F to toggle x8 */
+let SPEED = 1;
+if (import.meta.env.DEV) {
+  window.addEventListener('keydown', (e) => {
+    if (e.code !== 'KeyF') return;
+    SPEED = SPEED === 1 ? 8 : 1;
+    console.info('[FH] dev speed', SPEED);
+  });
+}
 
 class GameLoopSystem extends createSystem({}) {
   update(delta: number): void {
-    game?.update(Math.min(delta, 0.1));
+    game?.update(Math.min(delta, 0.1) * SPEED);
   }
 }
 
@@ -29,6 +39,7 @@ World.create(document.getElementById('scene-container') as HTMLDivElement, proje
   world.registerSystem(ChipsSystem);
   world.registerSystem(AudioSystem);
   world.registerSystem(BroadcastSystem);
+  world.registerSystem(OutcomeSystem);
   game = new Game(world, world.getSystem(PlaneReaderSystem)!);
   (window as unknown as { __fh: Game }).__fh = game;
 

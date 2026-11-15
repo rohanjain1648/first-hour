@@ -41,6 +41,8 @@ export const THREAD_TTL_S = 8;
 export const FREELANCE_AFTER_S = 45;
 export const IGNORE_GRACE_S = 60;
 export const IGNORE_STEP_S = 30;
+/** an agent left unattended this long is logged for the debrief */
+export const IGNORED_LOG_S = 90;
 const INBOX_SENT = 6;
 
 export interface OrchestratorDeps {
@@ -71,6 +73,7 @@ export class Orchestrator {
   private eventWake = new Set<AgentId>();
   private lastFreelanceT: Record<AgentId, number>;
   private lastIgnorePenaltyT: Record<AgentId, number>;
+  private ignoredLogged = new Set<AgentId>();
   private listeners = new Map<OrchEvent, ((data: unknown) => void)[]>();
 
   constructor(private d: OrchestratorDeps) {
@@ -142,8 +145,15 @@ export class Orchestrator {
   }
 
   private ignoreRules(a: AgentState, t: number): void {
-    if (this.focus === a.id) return;
+    if (this.focus === a.id) {
+      this.ignoredLogged.delete(a.id);
+      return;
+    }
     const ignored = t - a.lastFocusedT;
+    if (ignored > IGNORED_LOG_S && !this.ignoredLogged.has(a.id)) {
+      this.ignoredLogged.add(a.id);
+      logEvent(this.d.sim, 'agent.ignored', a.id, { seconds: Math.round(ignored) });
+    }
     if (ignored > IGNORE_GRACE_S && t - this.lastIgnorePenaltyT[a.id] >= IGNORE_STEP_S) {
       this.lastIgnorePenaltyT[a.id] = t;
       applyTrust(a, TRUST.ignoredPer30s);
@@ -285,6 +295,32 @@ export class Orchestrator {
   setFocus(id: AgentId | null): void {
     this.focus = id;
     if (id) this.d.agents[id].lastFocusedT = this.d.now();
+  }
+
+  /** scripted line (onboarding): spoken without an AI turn */
+  scriptSay(agent: AgentId, text: string): void {
+    this.emit('say', { agent, text, mood: 'calm', withhold: false });
+  }
+
+  /** scripted whisper (onboarding) */
+  scriptWhisper(from: AgentId, to: AgentId, text: string): void {
+    const t = this.d.now();
+    const th: Thread = { id: `w${++this.seq}`, from, to, text, createdT: t, expiresT: t + THREAD_TTL_S * 2, heard: false };
+    this.threads.push(th);
+    this.emit('whisper', th);
+  }
+
+  /** onboarding: expire threads without starting agent turns or logging misses */
+  expireOnly(): void {
+    const t = this.d.now();
+    this.threads = this.threads.filter((th) => th.expiresT > t);
+  }
+
+  /** drop onboarding threads/proposals when the crisis clock starts */
+  clearTransient(): void {
+    this.threads = [];
+    this.proposals = [];
+    for (const id of AGENT_IDS) this.d.agents[id].lastFocusedT = 0;
   }
 
   /** the player pinched an agent's badge */

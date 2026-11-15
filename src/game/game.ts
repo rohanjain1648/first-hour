@@ -1,7 +1,7 @@
 import { Vector3, VisibilityState, type World } from '@iwsdk/core';
 import { applyAction, type ActionResult } from '../sim/actions';
 import { createSim, tick, type ReplayInput } from '../sim/engine';
-import type { Action, Actor, Modifier, SimState } from '../sim/types';
+import type { Action, Actor, SimState } from '../sim/types';
 import { BoardView, buildFallbackDesk } from '../xr/board';
 import type { PlaneReaderSystem } from '../xr/planes';
 import { boardCenterOn, chooseTable, fallbackDesk, type PlaneInfo } from '../xr/table';
@@ -14,12 +14,19 @@ import { newAgentState } from '../agents/trust';
 import type { AgentState } from '../agents/types';
 import { createRng } from '../sim/rng';
 import type { AgentId } from '../sim/types';
-import { loadSave, readPref, type Save } from './persist';
+import { debrief, type Debrief } from '../agents/debrief';
+import { score, type Score } from '../sim/score';
+import { loadSave, readPref, writeSave, type Save } from './persist';
+import { ONBOARDING_SCRIPT, modifierFor, recordOutcome, simOptionsFor } from './progress';
 import { Session } from './session';
 
 export const TABLE_SEARCH_S = 3;
 
-export type GameEvent = 'reject' | 'place' | 'pickup' | 'pause' | 'resume';
+export type GameEvent = 'reject' | 'place' | 'pickup' | 'pause' | 'resume' | 'outcome' | 'debrief';
+
+/** board state at a crisis time, for the debrief scrubber */
+export interface Snapshot { tReal: number; state: SimState }
+export const SNAPSHOT_EVERY_S = 10;
 
 /** the one live game, for systems registered before it exists */
 export let currentGame: Game | null = null;
@@ -44,6 +51,13 @@ export class Game {
   private nextRumorT = 30;
   private directorBusy = false;
   private rumorBusy = false;
+  private scriptIdx = 0;
+  private nextSnapT = 0;
+  readonly snapshots: Snapshot[] = [];
+  outcome: (Score & { trust: number }) | null = null;
+  review: Debrief | null = null;
+  /** when set, the board shows this snapshot instead of the live sim (debrief scrubber) */
+  viewing: SimState | null = null;
   private searchT = 0;
   private headPos = new Vector3();
   private headDir = new Vector3();
@@ -58,6 +72,10 @@ export class Game {
     private readonly planes: PlaneReaderSystem,
   ) {
     this.session = new Session(() => performance.now() / 1000);
+    this.session.onPhase((p) => {
+      if (p === 'crisis') this.orch?.clearTransient();
+      if (p === 'outcome') this.finish();
+    });
     this.aiEnabled = readPref('fh.ai') !== '0';
     currentGame = this;
     world.visibilityState.subscribe((v) => {
@@ -138,7 +156,12 @@ export class Game {
     }
 
     this.board?.update(dt);
+    if (this.orch && s.phase === 'onboarding') this.runOnboarding();
     if (this.sim && s.phase === 'crisis') {
+      if (s.crisisElapsed >= this.nextSnapT) {
+        this.snapshots.push({ tReal: s.crisisElapsed, state: snapshotOf(this.sim) });
+        this.nextSnapT += SNAPSHOT_EVERY_S;
+      }
       const before = this.sim.t;
       tick(this.sim, dt);
       if (this.sim.t !== before) this.simDirty = true;
@@ -146,7 +169,7 @@ export class Game {
       this.runSystemAgents();
     }
     if (this.sim && this.board && this.simDirty) {
-      this.board.syncFrom(this.sim);
+      this.board.syncFrom(this.viewing ?? this.sim);
       this.simDirty = false;
     }
   }
@@ -158,7 +181,7 @@ export class Game {
     this.usedFallback = !found;
     if (!found) buildFallbackDesk(this.world, plane, this.world.session?.environmentBlendMode === 'opaque');
     this.plane = plane;
-    this.sim = createSim(Math.floor(Math.random() * 2 ** 31), this.pickModifier());
+    this.sim = createSim(Math.floor(Math.random() * 2 ** 31), modifierFor(this.save.sessions), simOptionsFor(this.save.upgrades));
     this.board = new BoardView(this.world, plane, pos);
     this.board.syncFrom(this.sim);
     this.agents = Object.fromEntries(AGENT_IDS.map((id) => [id, newAgentState(id, this.save.memories[id] ?? [])])) as Record<AgentId, AgentState>;
@@ -170,7 +193,7 @@ export class Game {
       ai: this.ai,
       agents: this.agents,
       rng: createRng(sim.seed ^ 0x5bd1e995),
-      now: () => this.session.crisisElapsed,
+      now: () => (this.session.phase === 'onboarding' ? this.session.phaseElapsed : this.session.crisisElapsed),
       act: (a, actor, o) => this.act(a, actor, o),
       sessionId: this.sessionId,
     });
@@ -215,7 +238,59 @@ export class Game {
     }
   }
 
-  private pickModifier(): Modifier {
-    return 'heavy';
+  private runOnboarding(): void {
+    const t = this.session.phaseElapsed;
+    while (this.scriptIdx < ONBOARDING_SCRIPT.length && ONBOARDING_SCRIPT[this.scriptIdx].at <= t) {
+      const step = ONBOARDING_SCRIPT[this.scriptIdx++];
+      if (step.whisperTo) this.orch!.scriptWhisper(step.agent, step.whisperTo, step.text);
+      else this.orch!.scriptSay(step.agent, step.text);
+    }
+    this.orch!.expireOnly();
   }
+
+  /** show the board as it was at a crisis time (null = live) */
+  view(tReal: number | null): void {
+    if (tReal === null) this.viewing = null;
+    else {
+      const snap = [...this.snapshots].reverse().find((x) => x.tReal <= tReal) ?? this.snapshots[0];
+      this.viewing = snap?.state ?? null;
+    }
+    this.simDirty = true;
+  }
+
+  private finish(): void {
+    const sim = this.sim;
+    if (!sim || !this.agents) return;
+    this.snapshots.push({ tReal: this.session.crisisElapsed, state: snapshotOf(sim) });
+    const trust = Math.round(AGENT_IDS.reduce((a, id) => a + this.agents![id].trust, 0) / AGENT_IDS.length);
+    this.outcome = { ...score(sim), trust };
+    const memories: Partial<Record<AgentId, string>> = {};
+    for (const id of AGENT_IDS) {
+      const a = this.agents[id];
+      memories[id] = a.memory[a.memory.length - 1]
+        ?? (a.trust >= 70 ? 'You backed me when it counted.' : a.trust < 30 ? 'You left me hanging last time.' : a.holdsChip ? 'You trusted me with authority.' : undefined);
+    }
+    recordOutcome(this.save, this.outcome.rating, memories);
+    writeSave(this.save);
+    console.info('[FH] outcome', JSON.stringify(this.outcome));
+    this.emit('outcome', this.outcome);
+    void debrief(sim, this.ai ?? { raw: async () => null }).then((d) => {
+      this.review = d;
+      this.emit('debrief', d);
+    });
+  }
+}
+
+function snapshotOf(s: SimState): SimState {
+  return {
+    ...s,
+    cells: s.cells.map((r) => r.map((c) => ({ ...c }))),
+    tokens: s.tokens.map((t) => ({ ...t, cell: t.cell ? { ...t.cell } : null })),
+    rumours: [],
+    log: [],
+    peopleInDanger: { ...s.peopleInDanger },
+    compliance: { ...s.compliance },
+    cutDistricts: [...s.cutDistricts],
+    liveWater: [],
+  };
 }
