@@ -22,6 +22,8 @@ export function makeState(cells: Cell[][], extra: Partial<SimState> = {}): SimSt
     rumours: [],
     log: [],
     modifier: 'heavy',
+    hospitalDarkS: 0,
+    liveWater: [],
     ...extra,
   };
 }

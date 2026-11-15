@@ -70,6 +70,10 @@ export interface SimState {
   rumours: Rumour[];
   log: GameEvent[];
   modifier: Modifier;
+  /** game seconds the hospital had no power */
+  hospitalDarkS: number;
+  /** cell keys that already logged a live-water hazard */
+  liveWater: string[];
 }
 
 export type Action =

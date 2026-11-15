@@ -3,7 +3,7 @@ import type { Cell, CellType, DistrictId } from './types';
 // r residential, = road, H bridge, R river, B bank, S school, + hospital,
 // F fire station, P substation, p park
 const LAYOUT = [
-  'rrSpp=rrrprr',
+  'rrS===rrrprr',
   'r==+===F=rrr',
   'BBBBBB=BBBBB',
   'RRRRRRHRRRRR',
