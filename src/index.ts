@@ -4,6 +4,7 @@ import { AudioSystem, ensureAudio } from './audio/audioSystem';
 import { Game } from './game/game';
 import { writePref } from './game/persist';
 import { AgentsSystem } from './xr/agentsView';
+import { BroadcastSystem } from './xr/broadcast';
 import { ChipsSystem } from './xr/chips';
 import { HudSystem } from './xr/hud';
 import { ThreadsSystem } from './xr/threads';
@@ -27,6 +28,7 @@ World.create(document.getElementById('scene-container') as HTMLDivElement, proje
   world.registerSystem(ThreadsSystem);
   world.registerSystem(ChipsSystem);
   world.registerSystem(AudioSystem);
+  world.registerSystem(BroadcastSystem);
   game = new Game(world, world.getSystem(PlaneReaderSystem)!);
   (window as unknown as { __fh: Game }).__fh = game;
 

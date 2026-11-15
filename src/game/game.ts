@@ -6,7 +6,9 @@ import { BoardView, buildFallbackDesk } from '../xr/board';
 import type { PlaneReaderSystem } from '../xr/planes';
 import { boardCenterOn, chooseTable, fallbackDesk, type PlaneInfo } from '../xr/table';
 import { AiClient } from '../agents/aiClient';
+import { applyDeckEvent, directorStep } from '../agents/director';
 import { Orchestrator } from '../agents/orchestrator';
+import { addRumour, rumorStep } from '../agents/rumor';
 import { AGENT_IDS } from '../agents/roles';
 import { newAgentState } from '../agents/trust';
 import type { AgentState } from '../agents/types';
@@ -38,6 +40,10 @@ export class Game {
   agents: Record<AgentId, AgentState> | null = null;
   save: Save = loadSave();
   readonly sessionId = Math.random().toString(36).slice(2);
+  private nextDirectorT = 90;
+  private nextRumorT = 30;
+  private directorBusy = false;
+  private rumorBusy = false;
   private searchT = 0;
   private headPos = new Vector3();
   private headDir = new Vector3();
@@ -137,6 +143,7 @@ export class Game {
       tick(this.sim, dt);
       if (this.sim.t !== before) this.simDirty = true;
       this.orch?.update(dt);
+      this.runSystemAgents();
     }
     if (this.sim && this.board && this.simDirty) {
       this.board.syncFrom(this.sim);
@@ -171,6 +178,41 @@ export class Game {
     console.info('[FH] board placed', JSON.stringify({ label: plane.label, fallback: this.usedFallback, center: plane.center, size: [this.board.width, this.board.depth] }));
     for (const l of this.listeners) l(this);
     void this.board.unfold(2).then(() => this.session.unfolded());
+  }
+
+  /** Director (pacing) and Rumor agents: async, self-throttled, dropped if a pause intervened */
+  private runSystemAgents(): void {
+    const sim = this.sim;
+    const ai = this.ai;
+    if (!sim || !ai) return;
+    const t = this.session.crisisElapsed;
+    if (!this.directorBusy && t >= this.nextDirectorT) {
+      this.directorBusy = true;
+      const epoch = this.session.epoch;
+      void directorStep(sim, ai, t).then((e) => {
+        this.directorBusy = false;
+        if (epoch !== this.session.epoch || this.sim !== sim) return;
+        const now = this.session.crisisElapsed;
+        if (e) {
+          applyDeckEvent(sim, e, now);
+          this.simDirty = true;
+          this.nextDirectorT = now + 60;
+        } else this.nextDirectorT = now + 15;
+      });
+    }
+    if (!this.rumorBusy && t >= this.nextRumorT) {
+      this.rumorBusy = true;
+      const epoch = this.session.epoch;
+      void rumorStep(sim, ai, t).then((r) => {
+        this.rumorBusy = false;
+        if (epoch !== this.session.epoch || this.sim !== sim) return;
+        const now = this.session.crisisElapsed;
+        if (r) {
+          addRumour(sim, r, now);
+          this.nextRumorT = now + 45;
+        } else this.nextRumorT = now + 10;
+      });
+    }
   }
 
   private pickModifier(): Modifier {
