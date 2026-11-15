@@ -60,6 +60,11 @@ function check(s: SimState, a: Action, actor: Actor): string | null {
   }
 }
 
+/** dry run: the rejection reason, or null if the action would be accepted now */
+export function validateAction(s: SimState, a: Action, actor: Actor): string | null {
+  return check(s, a, actor);
+}
+
 export function applyAction(s: SimState, a: Action, actor: Actor, opts: { delegated?: boolean } = {}): ActionResult {
   const reason = check(s, a, actor);
   if (reason) {
