@@ -48,3 +48,6 @@ pids/
 .remember/
 .superpowers/
 .vercel/
+
+.vercel
+.env*
