@@ -39,7 +39,7 @@ export class HudSystem extends createSystem({
     this.dialLabel.mesh.position.set(0, 0.05, 0);
     this.dialLabel.mesh.rotation.x = -0.5;
     dial.add(this.dialLabel.mesh);
-    dial.position.set(b.width / 2 + 0.06, 0, b.depth / 2 + 0.02);
+    dial.position.set(b.width * 0.36, 0, b.depth / 2 + 0.12);
     const e = this.world.createTransformEntity(dial, b.entity);
     e.addComponent(RayInteractable);
     e.addComponent(PokeInteractable);

@@ -59,14 +59,10 @@ function preview(text: string): string {
   return w.length > 6 ? `${w.slice(0, 6).join(' ')}…` : text;
 }
 
-/** local seat positions around the board edge: two on the far edge, one on each side (≈0° and ±30°) */
+/** local seat positions along the far edge, spread to about ±27° and ±9° so all four fit the VR Glasses view */
 function seat(i: number, width: number, depth: number): [number, number] {
-  return [
-    [-width / 2 - 0.06, -depth * 0.15],
-    [-width * 0.22, -depth / 2 - 0.06],
-    [width * 0.22, -depth / 2 - 0.06],
-    [width / 2 + 0.06, -depth * 0.15],
-  ][i] as [number, number];
+  const xs = [-0.4, -0.133, 0.133, 0.4];
+  return [xs[i] * width, -depth / 2 - 0.05];
 }
 
 export class AgentsSystem extends createSystem({}) {
@@ -79,7 +75,6 @@ export class AgentsSystem extends createSystem({}) {
   init(): void {
     this.tmp = new Vector3();
     HudSystem.handlers.set('report', (arg) => {
-      console.info('[FH] report requested', arg);
       currentGame?.orch?.requestReport(arg as AgentId);
     });
     HudSystem.handlers.set('approve', (arg) => currentGame?.orch?.playerApprove(arg));
@@ -117,9 +112,7 @@ export class AgentsSystem extends createSystem({}) {
       torso.position.y = 0.04;
       const head = new Mesh(new SphereGeometry(0.017, 16, 12), new MeshStandardMaterial({ color: 0xe6c9a8, roughness: 0.7 }));
       head.position.y = 0.092;
-      const base = new Mesh(new CylinderGeometry(0.03, 0.032, 0.006, 20), new MeshStandardMaterial({ color: 0x1c1e22 }));
-      base.position.y = 0.003;
-      root.add(base, torso, head);
+      root.add(torso, head);
 
       const badgeG = new Group();
       badgeG.name = `Badge_${id}`;
@@ -128,17 +121,17 @@ export class AgentsSystem extends createSystem({}) {
       badgeG.add(badge);
       badgeG.position.set(0, 0.05, 0.022);
 
-      const nameplate = new Label({ width: 0.14, aspect: 4.5, px: 70, bold: true });
-      nameplate.mesh.position.set(0, 0.135, 0);
+      const nameplate = new Label({ width: 0.2, aspect: 4.5, px: 70, bold: true });
+      nameplate.mesh.position.set(0, 0.14, 0);
       root.add(nameplate.mesh);
-      const caption = new Label({ width: 0.26, aspect: 2.6, px: 62 });
-      caption.mesh.position.set(0, 0.2, 0);
+      const caption = new Label({ width: 0.34, aspect: 2.6, px: 62 });
+      caption.mesh.position.set(0, 0.23, 0);
       caption.mesh.visible = false;
       root.add(caption.mesh);
 
       const card = new Group();
-      card.position.set(0, 0.3, 0);
-      const cardLabel = new Label({ width: 0.24, aspect: 3.4, px: 58, bg: 'rgba(40,30,8,0.95)' });
+      card.position.set(0, 0.36, 0);
+      const cardLabel = new Label({ width: 0.3, aspect: 3.4, px: 58, bg: 'rgba(40,30,8,0.95)' });
       card.add(cardLabel.mesh);
       card.visible = false;
 
@@ -157,16 +150,11 @@ export class AgentsSystem extends createSystem({}) {
       });
       this.heads.push({ id, pos: new Vector3() });
     });
-
-    g.orch!.on('proposal', (d) => console.info('[FH] proposal', JSON.stringify(d)));
-    g.orch!.on('whisper', (d) => console.info('[FH] whisper', JSON.stringify(d)));
-    g.orch!.on('proposalResolved', (d) => { const r = d as { proposal: Proposal; outcome: string }; console.info('[FH] resolved', r.proposal.agent, r.outcome, JSON.stringify(r.proposal.action)); });
     g.orch!.on('say', (d) => {
       const { agent, text } = d as { agent: AgentId; text: string };
       const f = this.figs.get(agent);
       if (!f) return;
       f.lastText = text;
-      console.info('[FH] say', agent, text);
       f.lastSayT = this.clock;
     });
   }

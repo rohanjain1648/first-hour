@@ -60,10 +60,6 @@ export class TraySystem extends createSystem({
       this.homeOf(g, tok, this.home);
       holder.position.copy(this.home);
     }
-    const sand = g.sim!.tokens.find((t) => t.id === 'sand1')!;
-    const p = this.homeOf(g, sand, new Vector3());
-    const c = g.board!.cellCenter({ x: 0, y: 5 });
-    console.info('[FH] tray', JSON.stringify({ sand1: p.toArray(), bank05: c.toArray() }));
   }
 
   private tokenOf(g: Game, e: Entity): Token | undefined {

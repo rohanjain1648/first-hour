@@ -104,7 +104,6 @@ export class Game {
   act(action: Action, actor: Actor, opts: { delegated?: boolean } = {}): ActionResult {
     if (!this.sim) return { ok: false, reason: 'no game running' };
     const r = applyAction(this.sim, action, actor, opts);
-    console.info('[FH] act', actor, JSON.stringify(action), JSON.stringify(r), this.session.phase);
     if (r.ok) {
       this.inputs.push({ tReal: this.session.crisisElapsed, action, actor });
       this.simDirty = true;
@@ -115,7 +114,6 @@ export class Game {
   }
 
   togglePause(): void {
-    console.info('[FH] togglePause', !this.session.paused);
     if (this.session.paused) {
       this.session.resume();
       this.emit('resume');
@@ -200,7 +198,23 @@ export class Game {
     this.session.tableFound();
     console.info('[FH] board placed', JSON.stringify({ label: plane.label, fallback: this.usedFallback, center: plane.center, size: [this.board.width, this.board.depth] }));
     for (const l of this.listeners) l(this);
-    void this.board.unfold(2).then(() => this.session.unfolded());
+    void this.board.unfold(2).then(() => {
+      this.session.unfolded();
+      if (import.meta.env.DEV) {
+        setTimeout(() => {
+          const r = this.world.renderer.info.render;
+          const byRoot: Record<string, number> = {};
+          this.world.scene.traverseVisible((o) => {
+            if (!(o as { isMesh?: boolean }).isMesh) return;
+            let top = o;
+            while (top.parent && top.parent !== this.world.scene && !top.name.startsWith('Agent_') && !top.name.startsWith('Token_') && top.name !== 'TownBoard') top = top.parent;
+            const key = top.name.replace(/_.*$/, '') || o.type;
+            byRoot[key] = (byRoot[key] ?? 0) + 1;
+          });
+          console.info('[FH] perf', JSON.stringify({ triangles: r.triangles, calls: r.calls, textures: this.world.renderer.info.memory.textures, byRoot }));
+        }, 2000);
+      }
+    });
   }
 
   /** Director (pacing) and Rumor agents: async, self-throttled, dropped if a pause intervened */

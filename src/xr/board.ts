@@ -122,7 +122,8 @@ export class BoardView {
 
   /** world point on the near edge (tray strip), u in 0..1 across the board */
   trayPoint(u: number, out = new Vector3()): Vector3 {
-    out.set((u - 0.5) * this.width, 0.02, this.depth / 2 + 0.05);
+    // central 70% of the near edge, so the whole tray fits a narrow field of view
+    out.set((u - 0.5) * this.width * 0.7, 0.02, this.depth / 2 + 0.05);
     return this.root.localToWorld(out);
   }
 

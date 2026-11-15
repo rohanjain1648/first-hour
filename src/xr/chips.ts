@@ -85,7 +85,7 @@ export class ChipsSystem extends createSystem({
     }
     // right end of the near edge, past the tokens
     const b = g.board!;
-    out.set(b.width / 2 - 0.03 - i * 0.04, 0.02, b.depth / 2 + 0.1);
+    out.set(b.width * 0.25 - i * 0.045, 0.02, b.depth / 2 + 0.12);
     return b.root.localToWorld(out);
   }
 

@@ -37,7 +37,7 @@ export class BroadcastSystem extends createSystem({}) {
     this.cardLabel.mesh.rotation.x = -Math.PI / 2;
     this.cardLabel.mesh.position.y = 0.004;
     card.add(this.cardLabel.mesh);
-    card.position.set(-b.width / 2 - 0.07, 0.006, b.depth / 2 + 0.02);
+    card.position.set(-b.width * 0.36, 0.006, b.depth / 2 + 0.12);
     const cardEntity = this.world.createTransformEntity(card, b.entity);
     cardEntity.addComponent(RayInteractable);
     cardEntity.addComponent(PokeInteractable);
