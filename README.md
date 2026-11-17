@@ -12,6 +12,22 @@
 - **Implementation plan:** [docs/superpowers/plans/2026-11-16-first-hour.md](docs/superpowers/plans/2026-11-16-first-hour.md)
 - **Submission text and video shot list:** [docs/submission.md](docs/submission.md)
 
+
+## What's new (17 Nov 2026)
+
+| Feature | How it works |
+|---|---|
+| **Desktop judge mode** | Open the link on any desktop browser: the production build ships IWSDK's emulator (IWER) with a virtual conference room, so the full game runs with mouse and keyboard. Real Quest browsers are excluded by user agent and use native WebXR. |
+| **Spoken agent voices** | The agent you face speaks aloud with the browser's speech synthesis, each with its own voice, pitch and rate. Everyone else murmurs in spatial babble, so you can hear where your attention is. Toggle on the landing page; falls back to babble if unsupported. |
+| **Voice commands (optional)** | A mic button on the table: pinch, then say "approve", "deny the hospital", "Ravi, report", "broadcast", "pause", or any order ("Chief, send crews to Riverside"). Orders go into that agent's inbox and wake it up, so the AI responds to what you said. Every command also has a hand equivalent. |
+| **Microgestures** | Thumb on the side of your index finger: **tap** approves the focused agent's proposal, **swipe left** denies it, **swipe forward** asks for a report. |
+| **Agent Minds (X-ray view)** | Pinch the Minds lens: each agent shows its current intent, trust, mood, whether it is holding information back and what it remembers about you, and glowing links show which agents have been talking. |
+| **Weather and event effects** | Rain over the board (heavier as the storm grows, with lightning on Director events), red pulsing danger cells, blinking beacons on deployed crews, and a floating banner for each event. |
+| **Recenter** | A button beside the pause dial puts the board back in front of you. |
+| **Daily challenge** | The same date-seeded flood for everyone today; your best rating for the day is saved. |
+| **High-contrast captions** | Pure white text on black, larger type. |
+| **AI, privacy and content disclosure** | On the landing page: AI-generated dialogue, fictional setting, no personal data, voice never stored, 10+. |
+
 ---
 
 ## Contents

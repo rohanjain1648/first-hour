@@ -46,6 +46,8 @@ Everything is a pinch:
 - **It still works if you remove the AI.** Every agent has a rule-based fallback, so the game plays fully offline or without a model.
 - The town lands on your detected table (or a virtual desk), and the layout fits the VR Glasses' narrower view.
 
+**Also inside:** the agent you face speaks aloud; optional voice commands and thumb microgestures; an Agent Minds X-ray view of every agent's intent and trust; a daily challenge; high-contrast captions; and a desktop mode that runs in any browser.
+
 **What's next**
 - Real people can take seats in place of AI agents, for mixed human/AI drills.
 - More scenarios: wildfire, heatwave, a cyberattack on the water plant.
