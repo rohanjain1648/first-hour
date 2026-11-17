@@ -5,6 +5,7 @@ import type { AgentId } from '../sim/types';
 import { AgentsSystem } from '../xr/agentsView';
 import { Ambient } from './ambient';
 import { Babble } from './babble';
+import { SpeechOut } from '../voice/speech';
 
 let ctx: AudioContext | null = null;
 
@@ -23,6 +24,7 @@ export class AudioSystem extends createSystem({}) {
   private wired: Game | null = null;
   private babble: Babble | null = null;
   private ambient: Ambient | null = null;
+  private speech: SpeechOut | null = null;
   private fwd!: Vector3;
   private p!: Vector3;
 
@@ -42,10 +44,15 @@ export class AudioSystem extends createSystem({}) {
     g.on('reject', () => amb.chime('reject'));
     g.on('place', () => amb.chime('place'));
     g.on('pickup', () => amb.chime('pickup'));
+    if (g.options.voices === 'spoken' && SpeechOut.supported()) this.speech = new SpeechOut();
     g.orch?.on('say', (d) => {
       const { agent, text } = d as { agent: AgentId; text: string };
-      this.babble?.speak(agent, text, g.orch?.focus === agent);
+      const focused = g.orch?.focus === agent;
+      // attention made audible: the agent you face (and every onboarding line) speaks aloud; the rest murmur
+      if (this.speech && (focused || g.session.phase === 'onboarding')) this.speech.speak(agent, text);
+      else this.babble?.speak(agent, text, focused);
     });
+    g.on('pause', () => this.speech?.stop());
     g.orch?.on('whisper', () => amb.chime('whisper'));
     g.orch?.on('proposal', () => amb.chime('place'));
     let seen = g.sim?.log.length ?? 0;

@@ -3,41 +3,89 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="First Hour: a seated, hands-only mixed-reality crisis game. A flood hits a town on your table; four AI department heads argue, whisper and act." />
+    <meta property="og:title" content="First Hour — Mixed Reality Crisis Strategy Game" />
+    <meta property="og:description" content="A flood hits a town on your real table. Four AI department heads argue, whisper and act. You lead with your hands. Ten minutes." />
+    <meta property="og:image" content="/cover.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="First Hour — Mixed Reality Crisis Strategy Game" />
+    <meta name="twitter:description" content="A flood hits a town on your real table. Four AI department heads argue, whisper and act. You lead with your hands. Ten minutes." />
+    <meta name="twitter:image" content="/cover.jpg" />
     <link rel="icon" href="data:," />
     <title>First Hour</title>
     <style>
-      :root { --ink: #f4efe6; --muted: #b9b2a6; --bg: #14161a; --accent: #e8a33d; }
+      :root { --ink: #f4efe6; --muted: #c4bdb1; --bg: #14161a; --accent: #e8a33d; --panel: rgba(255, 255, 255, 0.05); --line: rgba(255, 255, 255, 0.12); }
+      * { box-sizing: border-box; }
       body { margin: 0; background: var(--bg); font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
       #landing {
-        position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center;
-        padding: 16px; background: radial-gradient(circle at 50% 30%, #23262c, #101215 70%); color: var(--ink);
+        position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; overflow-y: auto;
+        padding: 24px 16px; background: radial-gradient(circle at 50% 25%, #262a31, #0f1114 70%); color: var(--ink);
       }
       #landing[hidden] { display: none; }
-      .card { max-width: 560px; text-align: center; }
-      h1 { font-size: clamp(40px, 9vw, 72px); margin: 0 0 8px; letter-spacing: 0.02em; }
-      .pitch { font-size: clamp(16px, 3.6vw, 20px); line-height: 1.5; color: var(--muted); margin: 0 0 28px; }
+      .card { width: 100%; max-width: 600px; text-align: center; margin: auto; }
+      .kicker { font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; }
+      h1 { font-size: clamp(42px, 10vw, 76px); margin: 0 0 10px; letter-spacing: 0.01em; line-height: 1; }
+      .pitch { font-size: clamp(16px, 3.8vw, 20px); line-height: 1.5; color: var(--muted); margin: 0 0 26px; }
       #start-btn {
-        font-size: 22px; font-weight: 700; padding: 18px 44px; border-radius: 999px; border: 0; cursor: pointer;
+        font-size: 22px; font-weight: 700; padding: 18px 48px; border-radius: 999px; border: 0; cursor: pointer;
         background: var(--accent); color: #1b1307;
       }
-      #start-btn:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
-      .opts { margin-top: 20px; color: var(--muted); font-size: 15px; }
-      .note { margin-top: 28px; font-size: 13px; color: #b0aa9e; }
+      #start-btn:focus-visible, .opts input:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+      .daily { margin-top: 12px; font-size: 14px; color: var(--muted); min-height: 1.4em; }
+      .opts {
+        margin: 22px auto 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px;
+        text-align: left; font-size: 15px; color: var(--ink);
+      }
+      .opts label { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); cursor: pointer; }
+      .opts label small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+      .opts input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+      .opts label[data-unsupported] { opacity: 0.55; }
+      details { margin-top: 18px; text-align: left; font-size: 13.5px; color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+      details summary { cursor: pointer; color: var(--ink); font-weight: 600; }
+      details ul { margin: 8px 0 2px; padding-left: 18px; line-height: 1.55; }
+      .note { margin-top: 16px; font-size: 13px; color: var(--muted); line-height: 1.5; }
     </style>
   </head>
   <body>
     <div id="landing">
       <div class="card">
+        <p class="kicker">A mixed-reality crisis drill</p>
         <h1>First Hour</h1>
         <p class="pitch">
-          A flood hits a small town on your table. Your four AI department heads disagree.
-          You have one hour, ten real minutes, and two hands.
+          A flood hits a small town on your table. Your four AI department heads disagree,
+          whisper behind your back, and act when you look away. You have one hour, ten real minutes, and two hands.
         </p>
         <button id="start-btn" type="button">Start</button>
+        <p class="daily" id="daily-line"></p>
         <div class="opts">
-          <label><input id="ai-toggle" type="checkbox" checked /> AI agents on</label>
+          <label><input id="opt-ai" type="checkbox" checked /><span>AI agents<small>Live AI department heads. Off = scripted agents.</small></span></label>
+          <label id="lbl-voices"><input id="opt-voices" type="checkbox" checked /><span>Spoken voices<small>The agent you face speaks aloud.</small></span></label>
+          <label id="lbl-voicecmd"><input id="opt-voicecmd" type="checkbox" /><span>Voice commands<small>Optional mic button: “approve”, “report”, orders.</small></span></label>
+          <label><input id="opt-contrast" type="checkbox" /><span>High-contrast captions<small>Larger, brighter text.</small></span></label>
+          <label><input id="opt-daily" type="checkbox" /><span>Daily challenge<small>Same flood for everyone today.</small></span></label>
         </div>
-        <p class="note">Hands only. Best seated at a table. Harrow Bend is a fictional town.</p>
+        <details>
+          <summary>How to play</summary>
+          <ul>
+            <li>Sit at a table. Everything is a pinch: grab tokens from the tray and drop them on the town.</li>
+            <li>Pinch an agent's gold badge for a report; pinch ✓ or ✗ on their proposals.</li>
+            <li>Pinch the bead on a glowing thread to overhear a private whisper. They will notice.</li>
+            <li>Hand a gold chip to an agent to let them act without asking.</li>
+            <li>Optional shortcuts: thumb-tap your index finger to approve, swipe left to deny.</li>
+            <li>No headset? You get an emulated Quest in a virtual room. Drag with the right mouse button to look around; switch the emulator to hands and hold the left button to pinch.</li>
+          </ul>
+        </details>
+        <details>
+          <summary>AI, privacy and content</summary>
+          <ul>
+            <li>Agent dialogue is generated by AI (Anthropic's Claude) or by built-in scripts. It may be imperfect.</li>
+            <li>Harrow Bend, its people and its agencies are fictional. This is a training game, not emergency advice.</li>
+            <li>No account, no personal data. Progress is saved only in this browser.</li>
+            <li>Voice commands use your browser's speech service only while you hold the mic on; audio is never stored by First Hour.</li>
+            <li>Depicts a flood emergency without injury imagery. Suitable for ages 10+.</li>
+          </ul>
+        </details>
+        <p class="note">Hands only. Seated. Works on Meta Quest and Meta VR Glasses.</p>
       </div>
     </div>
     <div id="scene-container"></div>

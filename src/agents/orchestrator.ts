@@ -74,6 +74,7 @@ export class Orchestrator {
   private lastFreelanceT: Record<AgentId, number>;
   private lastIgnorePenaltyT: Record<AgentId, number>;
   private ignoredLogged = new Set<AgentId>();
+  private talk = new Map<string, number>();
   private listeners = new Map<OrchEvent, ((data: unknown) => void)[]>();
 
   constructor(private d: OrchestratorDeps) {
@@ -220,6 +221,8 @@ export class Orchestrator {
       if (m.to === a.id) continue;
       const to = this.d.agents[m.to];
       to.inbox.push({ from: a.id, text: m.text, t });
+      const key = [a.id, m.to].sort().join('|');
+      this.talk.set(key, (this.talk.get(key) ?? 0) + 1);
       this.eventWake.add(m.to);
       if (m.private) {
         const th: Thread = { id: `w${++this.seq}`, from: a.id, to: m.to, text: m.text, createdT: t, expiresT: t + THREAD_TTL_S, heard: false };
@@ -321,6 +324,24 @@ export class Orchestrator {
     this.threads = [];
     this.proposals = [];
     for (const id of AGENT_IDS) this.d.agents[id].lastFocusedT = 0;
+  }
+
+  /** messages exchanged between two agents so far (either direction) */
+  pairTalk(a: AgentId, b: AgentId): number {
+    return this.talk.get([a, b].sort().join('|')) ?? 0;
+  }
+
+  proposalFor(id: AgentId): Proposal | undefined {
+    return this.proposals.find((p) => p.agent === id);
+  }
+
+  /** a spoken (or typed) order from the Commander: goes to the named agent, else the focused one, else Fire */
+  commanderOrder(agent: AgentId | undefined, text: string): AgentId {
+    const id = agent ?? this.focus ?? 'fire';
+    this.d.agents[id].inbox.push({ from: 'player', text: `Commander orders: ${text}`, t: this.d.now() });
+    logEvent(this.d.sim, 'commander.order', 'player', { agent: id, text });
+    this.wantTurn.add(id);
+    return id;
   }
 
   /** the player pinched an agent's badge */

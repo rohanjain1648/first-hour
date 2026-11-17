@@ -22,6 +22,7 @@ import type { Action, AgentId } from '../sim/types';
 import { HudSystem } from './hud';
 import { Label } from './label';
 import { FhButton } from './tags';
+import { viewFlags } from './viewFlags';
 
 const MOOD_TINT: Record<Mood, number> = { calm: 0x000000, tense: 0x3a2a00, angry: 0x4a0a00, relieved: 0x002a10 };
 const CAPTION_HOLD_S = 7;
@@ -185,7 +186,7 @@ export class AgentsSystem extends createSystem({}) {
       f.nameplate.set(`${ROLES[f.id].title}${st.holdsChip ? ' ★' : ''} · ${Math.round(st.trust)}`);
 
       const fresh = this.clock - f.lastSayT < CAPTION_HOLD_S && f.lastText;
-      f.caption.mesh.visible = !!fresh;
+      f.caption.mesh.visible = !!fresh && !viewFlags.minds;
       if (fresh) {
         const focused = focus === f.id;
         f.caption.set(focused ? f.lastText : `💬 ${preview(f.lastText)}`);

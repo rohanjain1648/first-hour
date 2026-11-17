@@ -326,3 +326,22 @@ If time runs short, cut in this order: the replay scrubber (keep the three text 
 - Art details within §6.10, and the babble sound design.
 - How SEM rooms are loaded in development.
 - Project and file layout, and the test layout.
+
+## Addendum A (2026-11-17): judge-facing features
+
+Requested by the user: audit the project, add voice options and as many judge-attracting features as fit, keep hands-first and policy compliance.
+
+| # | Feature | Notes |
+|---|---|---|
+| A1 | **Desktop judge mode** | Production build ships the IWER emulator (`injectOnBuild`, `activation: always`); real Quest browsers are excluded by IWER's default user-agent exception, so they use native WebXR. Fixes the black screen on desktop. |
+| A2 | **Spoken agent voices (optional)** | Browser speech synthesis with a distinct voice/pitch/rate per agent. Only the focused agent speaks aloud; others keep the spatial babble (attention made audible). Falls back to babble where speech is unsupported. |
+| A3 | **Voice commands (optional, accessibility)** | A mic button on the table: pinch to talk. Commands: approve, deny, report, broadcast, pause, resume, each optionally naming an agent; anything else becomes a spoken order to the focused agent and enters its inbox. Hidden if the browser has no speech recognition. Never required: every command has a hand equivalent. |
+| A4 | **Microgestures** | Thumb tap on the side of the index finger = approve the focused agent's proposal; swipe left = deny; swipe forward = ask for a report. Optional shortcuts. |
+| A5 | **Agent Minds (X-ray) view** | Pinch the lens: each agent shows its current intent, trust, mood, whether it is withholding, and its last memory note; glowing lines show which agents have been talking to each other. Makes the multi-agent system visible. |
+| A6 | **Weather and event effects** | Rain over the board, pulsing red danger cells, beacons on deployed crews, a floating banner for each Director event and for outages. |
+| A7 | **Recenter** | A button beside the pause dial re-places the board in front of the player. |
+| A8 | **Daily challenge** | Optional: a date-seeded flood that everyone gets the same day, with today's best rating saved locally. |
+| A9 | **Accessibility options** | High-contrast captions (pure white on black, larger). Captions always on; one-handed play possible throughout. |
+| A10 | **Policy and disclosure** | Landing page states: AI-generated dialogue, fictional setting, voice handled in the browser and never stored, no personal data collected, suitable for ages 10+. |
+
+Anti-goals stay: no feature may make a controller or voice necessary.

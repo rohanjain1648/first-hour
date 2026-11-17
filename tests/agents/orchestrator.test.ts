@@ -179,3 +179,37 @@ describe('turn throttling', () => {
     expect(after - before).toBeLessThanOrEqual(1);
   });
 });
+
+describe('commander orders and talk tracking', () => {
+  test('an order goes to the named agent inbox and wakes it now', async () => {
+    const { ai, orch, advance } = setup();
+    await advance(5);
+    const before = ai.turn.mock.calls.filter((c) => (c[0] as TurnRequest).agentId === 'press').length;
+    orch.commanderOrder('press', 'Tell people the shelter is open');
+    await advance(1);
+    const calls = ai.turn.mock.calls.filter((c) => (c[0] as TurnRequest).agentId === 'press');
+    expect(calls.length).toBe(before + 1);
+    expect(JSON.stringify(calls[calls.length - 1][0])).toContain('shelter is open');
+  });
+  test('an order with no agent goes to the focused agent, or fire by default', () => {
+    const { agents, orch } = setup();
+    orch.setFocus('hospital');
+    orch.commanderOrder(undefined, 'Hold the generator');
+    expect(agents.hospital.inbox.some((m) => m.text.includes('Hold the generator'))).toBe(true);
+  });
+  test('pairTalk counts messages between agents (unordered pair)', async () => {
+    const { orch, advance } = setup(async (req) =>
+      req.agentId === 'fire' ? { ...calm, messages: [{ to: 'utilities', text: 'Cut it.', private: true }] } : calm,
+    );
+    await advance(2);
+    expect(orch.pairTalk('utilities', 'fire')).toBe(1);
+  });
+  test('proposalFor returns the live proposal of an agent', async () => {
+    const { orch, advance } = setup(async (req) =>
+      req.agentId === 'fire' ? { ...calm, proposals: [{ action: { kind: 'deploy', token: 'sand1', cell: { x: 0, y: 5 } }, rationale: 'Hold the bank.' }] } : calm,
+    );
+    await advance(2);
+    expect(orch.proposalFor('fire')?.action.kind).toBe('deploy');
+    expect(orch.proposalFor('press')).toBeUndefined();
+  });
+});

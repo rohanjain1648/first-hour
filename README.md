@@ -2,6 +2,8 @@
 
 > A flood hits a town on your real table. Four AI department heads argue, whisper and act. You lead with your hands. Ten minutes.
 
+![First Hour — Mixed Reality Crisis Strategy Game](public/cover.jpg)
+
 **First Hour** is a seated, hands-only mixed-reality strategy game for Meta Quest and Meta VR Glasses, built with Meta's [Immersive Web SDK (IWSDK)](https://developers.meta.com/horizon/documentation/iwsdk/guides/overview/). It runs in the browser, so there's nothing to install.
 
 - **Live build:** https://first-hour-phi.vercel.app (open it in the Meta Quest Browser, sit at a table, press **Start**)

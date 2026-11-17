@@ -49,4 +49,5 @@ export const ONBOARDING_SCRIPT: ScriptStep[] = [
   { at: 22, agent: 'press', text: 'See that glowing thread? Pinch the bead to listen in. They might not like it.' },
   { at: 34, agent: 'hospital', text: 'Gold chips give one of us authority to act without asking. Choose carefully.' },
   { at: 46, agent: 'fire', text: 'The clock starts when that first sandbag lands. Every minute out there counts.' },
+  { at: 58, agent: 'press', text: 'Pinch the Minds lens to see what each of us is really thinking. And who we talk to.' },
 ];

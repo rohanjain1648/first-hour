@@ -17,6 +17,7 @@ export class HudSystem extends createSystem({
 
   init(): void {
     HudSystem.handlers.set('pause', () => currentGame?.togglePause());
+    HudSystem.handlers.set('recenter', () => currentGame?.recenter());
     this.cleanupFuncs.push(
       this.queries.pressed.subscribe('qualify', (e) => {
         const h = HudSystem.handlers.get(e.getValue(FhButton, 'action') as string);
@@ -44,6 +45,20 @@ export class HudSystem extends createSystem({
     e.addComponent(RayInteractable);
     e.addComponent(PokeInteractable);
     e.addComponent(FhButton, { action: 'pause' });
+
+    const rc = new Group();
+    rc.name = 'RecenterButton';
+    rc.add(new Mesh(new CylinderGeometry(0.02, 0.02, 0.008, 20), new MeshStandardMaterial({ color: 0x3a4250, emissive: 0x0c0e12 })));
+    const rcLabel = new Label({ width: 0.08, aspect: 3, px: 90, bold: true });
+    rcLabel.set('Recenter');
+    rcLabel.mesh.position.set(0, 0.035, 0);
+    rcLabel.mesh.rotation.x = -0.5;
+    rc.add(rcLabel.mesh);
+    rc.position.set(b.width * 0.36, 0, b.depth / 2 + 0.2);
+    const rce = this.world.createTransformEntity(rc, b.entity);
+    rce.addComponent(RayInteractable);
+    rce.addComponent(PokeInteractable);
+    rce.addComponent(FhButton, { action: 'recenter' });
 
     this.pausedLabel = new Label({ width: 0.5, aspect: 4, px: 80, bold: true });
     this.pausedLabel.set('Paused. Pinch the dial to resume.');

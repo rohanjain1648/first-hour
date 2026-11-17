@@ -54,7 +54,9 @@
   "dev": {
     "emulator": {
       "device": "metaQuest3",
-      "environment": "conference_room"
+      "environment": "conference_room",
+      "activation": "always",
+      "injectOnBuild": true
     }
   }
 }

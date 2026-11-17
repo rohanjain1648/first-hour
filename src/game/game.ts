@@ -16,13 +16,15 @@ import { createRng } from '../sim/rng';
 import type { AgentId } from '../sim/types';
 import { debrief, type Debrief } from '../agents/debrief';
 import { score, type Score } from '../sim/score';
-import { loadSave, readPref, writeSave, type Save } from './persist';
+import { loadSave, writeSave, type Save } from './persist';
+import { dailySeed, dateKey } from './daily';
+import { loadOptions, recordDaily, type Options } from './options';
 import { ONBOARDING_SCRIPT, modifierFor, recordOutcome, simOptionsFor } from './progress';
 import { Session } from './session';
 
 export const TABLE_SEARCH_S = 3;
 
-export type GameEvent = 'reject' | 'place' | 'pickup' | 'pause' | 'resume' | 'outcome' | 'debrief';
+export type GameEvent = 'reject' | 'place' | 'pickup' | 'pause' | 'resume' | 'outcome' | 'debrief' | 'banner';
 
 /** board state at a crisis time, for the debrief scrubber */
 export interface Snapshot { tReal: number; state: SimState }
@@ -41,7 +43,10 @@ export class Game {
   board: BoardView | null = null;
   plane: PlaneInfo | null = null;
   usedFallback = false;
-  aiEnabled: boolean;
+  options: Options = loadOptions();
+  get aiEnabled(): boolean {
+    return this.options.ai;
+  }
   ai: AiClient | null = null;
   orch: Orchestrator | null = null;
   agents: Record<AgentId, AgentState> | null = null;
@@ -76,7 +81,6 @@ export class Game {
       if (p === 'crisis') this.orch?.clearTransient();
       if (p === 'outcome') this.finish();
     });
-    this.aiEnabled = readPref('fh.ai') !== '0';
     currentGame = this;
     world.visibilityState.subscribe((v) => {
       if (this.session.phase === 'landing') return;
@@ -179,7 +183,9 @@ export class Game {
     this.usedFallback = !found;
     if (!found) buildFallbackDesk(this.world, plane, this.world.session?.environmentBlendMode === 'opaque');
     this.plane = plane;
-    this.sim = createSim(Math.floor(Math.random() * 2 ** 31), modifierFor(this.save.sessions), simOptionsFor(this.save.upgrades));
+    this.sim = this.options.daily
+      ? createSim(dailySeed(new Date()), 'heavy')
+      : createSim(Math.floor(Math.random() * 2 ** 31), modifierFor(this.save.sessions), simOptionsFor(this.save.upgrades));
     this.board = new BoardView(this.world, plane, pos);
     this.board.syncFrom(this.sim);
     this.agents = Object.fromEntries(AGENT_IDS.map((id) => [id, newAgentState(id, this.save.memories[id] ?? [])])) as Record<AgentId, AgentState>;
@@ -262,6 +268,25 @@ export class Game {
     this.orch!.expireOnly();
   }
 
+  /** move the board back in front of the player (nearest table if one is in reach, else 0.45 m ahead) */
+  recenter(): void {
+    const b = this.board;
+    if (!b || !this.plane) return;
+    const { pos, dir } = this.head();
+    const found = chooseTable(this.planes.collect(), pos, this.planes.floorY());
+    const c = found ? boardCenterOn(found, pos) : null;
+    const l = Math.hypot(dir.x, dir.z) || 1;
+    b.root.position.set(c?.x ?? pos.x + (dir.x / l) * 0.45, c?.y ?? this.plane.center.y, c?.z ?? pos.z + (dir.z / l) * 0.45);
+    b.root.rotation.y = Math.atan2(pos.x - b.root.position.x, pos.z - b.root.position.z);
+    this.emit('banner', 'Board recentred');
+  }
+
+  /** short floating message over the board (events, gestures, voice) */
+  banner(text: string): void {
+    console.info('[FH] banner', text);
+    this.emit('banner', text);
+  }
+
   /** show the board as it was at a crisis time (null = live) */
   view(tReal: number | null): void {
     if (tReal === null) this.viewing = null;
@@ -285,6 +310,7 @@ export class Game {
         ?? (a.trust >= 70 ? 'You backed me when it counted.' : a.trust < 30 ? 'You left me hanging last time.' : a.holdsChip ? 'You trusted me with authority.' : undefined);
     }
     recordOutcome(this.save, this.outcome.rating, memories);
+    if (this.options.daily) recordDaily(dateKey(new Date()), this.outcome.rating);
     writeSave(this.save);
     console.info('[FH] outcome', JSON.stringify(this.outcome));
     this.emit('outcome', this.outcome);
