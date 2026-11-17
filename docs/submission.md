@@ -50,7 +50,7 @@ Everything is a pinch:
 
 **What's next**
 - Real people taking seats beside AI agents.
-- More scenarios: wildfire, heatwave, a cyberattack on the water plant.
+- More scenarios: wildfire, heatwave, cyberattack.
 - Eye tracking on Meta VR Glasses.
 - Maps of the player's own town, and a "drill mode" for emergency-management offices, hospitals and schools.
 
