@@ -36,7 +36,7 @@ Everything is a pinch:
 - Hand a gold chip to an agent to give them authority to act without asking.
 - Pinch the broadcast card to answer a rumour.
 
-**Attention is the resource.** You can only follow whoever you face. Agents you ignore lose trust, start acting on their own, and may stop sharing what they know. Afterwards, a debrief replays the board, names three leadership lessons (span of control, delegation, checking information, one public message) and reveals the deals made while you weren't looking.
+**Attention is the resource.** Agents you ignore lose trust, act on their own, and stop sharing what they know. Afterwards, a debrief replays the board, names three leadership lessons (span of control, delegation, checking information, one public message) and reveals the deals made while you weren't looking.
 
 **How we built it**
 - Built with Meta's Immersive Web SDK 1.0 (Three.js plus ECS) and deployed on Vercel.
@@ -49,7 +49,7 @@ Everything is a pinch:
 **Also inside:** the agent you face speaks aloud; optional voice commands and thumb microgestures; an Agent Minds X-ray view of every agent's intent and trust; a daily challenge; high-contrast captions; and a desktop mode that runs in any browser.
 
 **What's next**
-- Real people can take seats in place of AI agents, for mixed human/AI drills.
+- Real people taking seats beside AI agents.
 - More scenarios: wildfire, heatwave, a cyberattack on the water plant.
 - Eye tracking on Meta VR Glasses.
 - Maps of the player's own town, and a "drill mode" for emergency-management offices, hospitals and schools.
